@@ -6,6 +6,7 @@ type ErrorType struct {
 
 var (
 	ErrorTypeUnknown        = ErrorType{"unknown"}
+	ErrorTypeNotImplemented = ErrorType{"not-implemented"}
 	ErrorTypeAuthorization  = ErrorType{"authorization"}
 	ErrorTypeIncorrectInput = ErrorType{"incorrect-input"}
 )
@@ -49,5 +50,13 @@ func NewIncorrectInputError(error string, slug string) SlugError {
 		error:     error,
 		slug:      slug,
 		errorType: ErrorTypeIncorrectInput,
+	}
+}
+
+func NewNotImplementedError(error string, slug string) SlugError {
+	return SlugError{
+		error:     error,
+		slug:      slug,
+		errorType: ErrorTypeNotImplemented,
 	}
 }

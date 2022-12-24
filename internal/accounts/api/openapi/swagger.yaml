@@ -1,0 +1,144 @@
+basePath: /
+definitions:
+  httperr.ErrorResponse:
+    properties:
+      slug:
+        type: string
+    type: object
+  ports.accountResponse:
+    properties:
+      account_id:
+        type: integer
+      email:
+        format: email
+        type: string
+      role:
+        enum:
+        - admin
+        - ' basic'
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/ports.userResponse'
+        type: array
+    type: object
+  ports.loginParams:
+    properties:
+      password:
+        format: password
+        minLength: 4
+        type: string
+      username:
+        minLength: 1
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  ports.loginResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        format: date-time
+        type: string
+      account:
+        $ref: '#/definitions/ports.accountResponse'
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        format: date-time
+        type: string
+    type: object
+  ports.registerParams:
+    properties:
+      email:
+        format: password
+        type: string
+      password:
+        format: password
+        minLength: 4
+        type: string
+      username:
+        minLength: 1
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  ports.userResponse:
+    properties:
+      browser:
+        type: string
+      ip:
+        format: ipv4
+        type: string
+      uuid:
+        format: uuid
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This service provide functionality for storing and managing privat
+    telegram channels with subscription based payments for acessing content.
+  title: Telegram Subs API
+  version: "1.0"
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: logs in to account with user provided credantials
+      parameters:
+      - description: account login credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/ports.loginParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ports.loginResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      summary: Logs user into the system
+      tags:
+      - auth
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: registers new account
+      parameters:
+      - description: register credantials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/ports.registerParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      summary: Registers user into the system
+      tags:
+      - auth
+securityDefinitions:
+  JWT:
+    in: header
+    name: authorization
+    type: apiKey
+swagger: "2.0"

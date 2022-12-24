@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-readonly service="$1"
-readonly output_dir="$2"
-readonly package="$3"
+readonly output_dir="$1"
 
-oapi-codegen -generate types -o "$output_dir/openapi_types.gen.go" -package "$package" "api/openapi/$service.yml"
-oapi-codegen -generate gin,spec -o "$output_dir/openapi_api.gen.go" -package "$package" "api/openapi/$service.yml"
+swag init -g "$output_dir/main.go" -o "$output_dir/api/openapi/" --ot go,yaml
