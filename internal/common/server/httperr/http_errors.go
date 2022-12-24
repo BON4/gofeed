@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/BON4/gofeed/internal/common/errors"
+	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 )
 
@@ -33,6 +34,23 @@ func RespondWithSlugError(err error, w http.ResponseWriter, r *http.Request) {
 		BadRequest(slugError.Slug(), slugError, w, r)
 	default:
 		InternalError(slugError.Slug(), slugError, w, r)
+	}
+}
+
+func GinRespondWithSlugError(err error, ctx *gin.Context) {
+	slugError, ok := err.(errors.SlugError)
+	if !ok {
+		InternalError("internal-server-error", err, ctx.Writer, ctx.Request)
+		return
+	}
+
+	switch slugError.ErrorType() {
+	case errors.ErrorTypeAuthorization:
+		Unauthorised(slugError.Slug(), slugError, ctx.Writer, ctx.Request)
+	case errors.ErrorTypeIncorrectInput:
+		BadRequest(slugError.Slug(), slugError, ctx.Writer, ctx.Request)
+	default:
+		InternalError(slugError.Slug(), slugError, ctx.Writer, ctx.Request)
 	}
 }
 
