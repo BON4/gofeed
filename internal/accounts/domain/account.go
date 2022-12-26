@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"sync"
 
+	pswrd "github.com/BON4/gofeed/internal/common/password"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 )
 
-type getUsers func(ctx context.Context) []*User
+type GetUsers func(ctx context.Context) ([]*User, error)
 
 type AccountRole string
 
@@ -32,22 +33,44 @@ func (e AccountRole) IsValid() error {
 
 type Account struct {
 	username string
-	password string
+	email    string
+	password []byte
 	role     AccountRole
 
 	users       []*User
 	once        *sync.Once
-	usersLoader getUsers
+	usersLoader GetUsers
 }
 
-func (a *Account) GetUsers(ctx context.Context) []*User {
+func (a *Account) GetUsername() string {
+	return a.username
+}
+
+func (a *Account) GetEmail() string {
+	return a.email
+}
+
+func (a *Account) GetPassword() []byte {
+	return a.password
+}
+
+func (a *Account) GetRole() AccountRole {
+	return a.role
+}
+
+func (a *Account) GetUsers(ctx context.Context) ([]*User, error) {
+	var err error
 	a.once.Do(func() {
-		a.users = a.usersLoader(ctx)
+		a.users, err = a.usersLoader(ctx)
 	})
-	return a.users
+
+	if err != nil {
+		return a.users, err
+	}
+	return a.users, nil
 }
 
-func (a *Account) setUsers(f getUsers) {
+func (a *Account) setUsers(f GetUsers) {
 	a.usersLoader = f
 	a.once = &sync.Once{}
 }
@@ -104,12 +127,21 @@ func NewFactory(fc FactoryConfig) (*Factory, error) {
 }
 
 func (f *Factory) NewAccount(username, email, password string, role AccountRole) (*Account, error) {
-	a := &Account{}
-	if err := f.validateAccount(a); err != nil {
+	a := &Account{
+		username: username,
+		email:    email,
+		role:     role,
+	}
+
+	err := f.validateAccount(a)
+	if err != nil {
 		return nil, err
 	}
 
-	// TODO: hash password before returning account
+	a.password, err = pswrd.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
 
 	return a, nil
 }
@@ -117,8 +149,14 @@ func (f *Factory) NewAccount(username, email, password string, role AccountRole)
 // UnmarshalAccountFromDatabase - unmarshals account from the database.
 //
 // It should be used only for unmarshalling from the database!
-func (f *Factory) UnmarshalAccountFromDatabase(username, email, password string, role AccountRole, lazyGetter getUsers) (*Account, error) {
-	a := &Account{}
+func (f *Factory) UnmarshalAccountFromDatabase(username, email string, password []byte, role AccountRole, lazyGetter getUsers) (*Account, error) {
+	a := &Account{
+		username: username,
+		email:    email,
+		password: password,
+		role:     role,
+	}
+
 	if lazyGetter == nil {
 		a.setUsers(func(ctx context.Context) []*User {
 			return []*User{}

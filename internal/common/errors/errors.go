@@ -6,6 +6,9 @@ type ErrorType struct {
 
 var (
 	ErrorTypeUnknown        = ErrorType{"unknown"}
+	ErrorTypeInvalidCred    = ErrorType{"invalid-credentials"}
+	ErrorTypeAlredyExists   = ErrorType{"already-exists"}
+	ErrorTypeDoesNotExists  = ErrorType{"does-not-exists"}
 	ErrorTypeNotImplemented = ErrorType{"not-implemented"}
 	ErrorTypeAuthorization  = ErrorType{"authorization"}
 	ErrorTypeIncorrectInput = ErrorType{"incorrect-input"}
@@ -34,6 +37,30 @@ func NewSlugError(error string, slug string) SlugError {
 		error:     error,
 		slug:      slug,
 		errorType: ErrorTypeUnknown,
+	}
+}
+
+func NewInvalidCredError(error string, slug string) SlugError {
+	return SlugError{
+		error:     error,
+		slug:      slug,
+		errorType: ErrorTypeInvalidCred,
+	}
+}
+
+func NewDoesNotExistsError(error string, slug string) SlugError {
+	return SlugError{
+		error:     error,
+		slug:      slug,
+		errorType: ErrorTypeDoesNotExists,
+	}
+}
+
+func NewAlreadyExistsError(error string, slug string) SlugError {
+	return SlugError{
+		error:     error,
+		slug:      slug,
+		errorType: ErrorTypeAlredyExists,
 	}
 }
 

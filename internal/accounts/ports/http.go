@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/BON4/gofeed/internal/accounts/app"
+	"github.com/BON4/gofeed/internal/accounts/app/usecase"
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
 	"github.com/gin-gonic/gin"
@@ -55,7 +56,22 @@ type loginResponse struct {
 // @Failure      default {object}  httperr.ErrorResponse
 // @Router       /api/login [post]
 func (h *HttpServer) Login(ctx *gin.Context) {
-	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
+	var req loginParams
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	err := h.app.LoginAccount.Handle(ctx.Request.Context(), usecase.LoginCommand{
+		Username: req.Username,
+		Password: req.Password,
+	})
+
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+	}
+
+	// TODO: create access and refresh token. Save it to go-cache
 }
 
 type registerParams struct {
@@ -74,8 +90,22 @@ type registerParams struct {
 // @Failure      default {object}  httperr.ErrorResponse
 // @Router       /api/register [post]
 func (h *HttpServer) Register(ctx *gin.Context) {
+	var req registerParams
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
 
-	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
+	err := h.app.RegisterAccount.Handle(ctx.Request.Context(), usecase.RegisterCommand{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: req.Password,
+	})
+
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+	}
+
 }
 
 // TODO: maby separate Account CRUD to another service

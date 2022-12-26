@@ -16,6 +16,14 @@ func Unauthorised(slug string, err error, w http.ResponseWriter, r *http.Request
 	httpRespondWithError(err, slug, w, r, "Unauthorised", http.StatusUnauthorized)
 }
 
+// func DoesNotExists(slug string, err error, w http.ResponseWriter, r *http.Request) {
+// 	httpRespondWithError(err, slug, w, r, "Does Not Exists", http.StatusBadRequest)
+// }
+
+// func AlreadyExists(slug string, err error, w http.ResponseWriter, r *http.Request) {
+// 	httpRespondWithError(err, slug, w, r, "Already Exists", http.StatusBadRequest)
+// }
+
 func BadRequest(slug string, err error, w http.ResponseWriter, r *http.Request) {
 	httpRespondWithError(err, slug, w, r, "Bad request", http.StatusBadRequest)
 }
@@ -28,6 +36,12 @@ func RespondWithSlugError(err error, w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch slugError.ErrorType() {
+	case errors.ErrorTypeInvalidCred:
+		Unauthorised(slugError.Slug(), slugError, w, r)
+	case errors.ErrorTypeAlredyExists:
+		BadRequest(slugError.Slug(), slugError, w, r)
+	case errors.ErrorTypeDoesNotExists:
+		BadRequest(slugError.Slug(), slugError, w, r)
 	case errors.ErrorTypeAuthorization:
 		Unauthorised(slugError.Slug(), slugError, w, r)
 	case errors.ErrorTypeIncorrectInput:

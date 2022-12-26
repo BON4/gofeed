@@ -1,7 +1,10 @@
 package app
 
-import "github.com/BON4/gofeed/internal/accounts/domain"
+import (
+	"github.com/BON4/gofeed/internal/accounts/app/usecase"
+)
 
 type Application struct {
-	Repo domain.Repository
+	RegisterAccount usecase.RegisterAccountHandler
+	LoginAccount    usecase.LoginAccountHandler
 }
