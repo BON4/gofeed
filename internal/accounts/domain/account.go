@@ -132,13 +132,14 @@ func (f *Factory) NewAccount(username, email, password string, role AccountRole)
 		email:    email,
 		role:     role,
 	}
+	var err error
 
-	err := f.validateAccount(a)
+	a.password, err = pswrd.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	a.password, err = pswrd.HashPassword(password)
+	err = f.validateAccount(a)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +150,7 @@ func (f *Factory) NewAccount(username, email, password string, role AccountRole)
 // UnmarshalAccountFromDatabase - unmarshals account from the database.
 //
 // It should be used only for unmarshalling from the database!
-func (f *Factory) UnmarshalAccountFromDatabase(username, email string, password []byte, role AccountRole, lazyGetter getUsers) (*Account, error) {
+func (f *Factory) UnmarshalAccountFromDatabase(username, email string, password []byte, role AccountRole, lazyGetter GetUsers) (*Account, error) {
 	a := &Account{
 		username: username,
 		email:    email,
@@ -158,8 +159,8 @@ func (f *Factory) UnmarshalAccountFromDatabase(username, email string, password 
 	}
 
 	if lazyGetter == nil {
-		a.setUsers(func(ctx context.Context) []*User {
-			return []*User{}
+		a.setUsers(func(ctx context.Context) ([]*User, error) {
+			return []*User{}, nil
 		})
 	} else {
 		a.setUsers(lazyGetter)

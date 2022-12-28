@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	_ "github.com/lib/pq"
+
 	"github.com/BON4/gofeed/internal/accounts/adapters/sqlc"
 	"github.com/BON4/gofeed/internal/accounts/domain"
 )
@@ -70,4 +72,12 @@ func (p *PostgresAccountsRepository) unmarshalUser(usr *sqlc.User) *domain.User 
 		Os:      usr.Os.String,
 		Browser: usr.Browser.String,
 	}
+}
+
+func NewPostgresConnection(connStr string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }

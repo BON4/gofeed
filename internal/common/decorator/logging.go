@@ -29,7 +29,7 @@ func (d commandLoggingDecorator[C]) Handle(ctx context.Context, cmd C) (err erro
 		}
 	}()
 
-	return d.base(ctx, cmd)
+	return d.base.Handle(ctx, cmd)
 }
 
 type queryLoggingDecorator[C any, R any] struct {
@@ -52,5 +52,5 @@ func (d queryLoggingDecorator[C, R]) Handle(ctx context.Context, cmd C) (result 
 		}
 	}()
 
-	return d.base(ctx, cmd)
+	return d.base.Handle(ctx, cmd)
 }

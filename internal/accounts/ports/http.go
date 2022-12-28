@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/BON4/gofeed/internal/accounts/app"
@@ -62,7 +63,7 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 		return
 	}
 
-	err := h.app.LoginAccount.Handle(ctx.Request.Context(), usecase.LoginCommand{
+	resp, err := h.app.LoginAccount.Handle(ctx.Request.Context(), usecase.LoginQuery{
 		Username: req.Username,
 		Password: req.Password,
 	})
@@ -71,12 +72,14 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 		httperr.GinRespondWithSlugError(err, ctx)
 	}
 
+	ctx.JSON(http.StatusAccepted, resp)
+
 	// TODO: create access and refresh token. Save it to go-cache
 }
 
 type registerParams struct {
 	Username string `json:"username" minLength:"1" validate:"required"`
-	Email    string `json:"email" validate:"required" format:"password"`
+	Email    string `json:"email" validate:"required" format:"email"`
 	Password string `json:"password" minLength:"4" validate:"required" format:"password"`
 }
 

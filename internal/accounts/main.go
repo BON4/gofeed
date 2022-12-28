@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "github.com/BON4/gofeed/internal/accounts/api/openapi"
+	"github.com/BON4/gofeed/internal/accounts/config"
 
 	"github.com/BON4/gofeed/internal/accounts/ports"
 	"github.com/BON4/gofeed/internal/accounts/service"
@@ -22,7 +23,12 @@ import (
 // @in header
 // @name authorization
 func main() {
-	application := service.NewApplication()
+	cfg, err := config.LoadServerConfig(".")
+	if err != nil {
+		panic(err)
+	}
+
+	application := service.NewApplication(cfg)
 	server.RunHTTPServer(
 		func(router *gin.RouterGroup) {
 			ports.MountHandlers(
