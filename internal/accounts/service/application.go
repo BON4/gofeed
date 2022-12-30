@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/BON4/gofeed/internal/accounts/adapters"
 	"github.com/BON4/gofeed/internal/accounts/app"
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
@@ -38,8 +40,26 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	accUcc := usecase.NewAccountUsecase(rep, accfc, tokenfc, logger)
+
+	sessFc, err := domain.NewSessionfactory(domain.SessionFactoryConfig{
+		SessionMinTTL: time.Minute * 60,
+		SessionMaxTTL: time.Hour * 240,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	redisCli := adapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
+
+	redisStore := adapters.NewRedisStore(redisCli, &sessFc)
+
+	sessUc := usecase.NewSessionUsecase(redisStore, &sessFc, logger)
+
 	return &app.Application{
 		LoginAccount:    accUcc.HandleLogin(),
 		RegisterAccount: accUcc.HandleRegister(),
+		CreateSession:   sessUc.HandleCreateSession(),
+		SessionIsValid:  sessUc.HadleIsValidSession(),
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type AccountUsecase struct {
+type AuthUsecase struct {
 	repo    domain.Repository
 	accFc   *domain.Factory
 	tokenFc *domain.TokenFactory
@@ -24,8 +24,8 @@ func NewAccountUsecase(
 	fc *domain.Factory,
 	tokenFc *domain.TokenFactory,
 	logger *logrus.Entry,
-) *AccountUsecase {
-	return &AccountUsecase{
+) *AuthUsecase {
+	return &AuthUsecase{
 		repo:    repo,
 		tokenFc: tokenFc,
 		accFc:   fc,
@@ -41,7 +41,7 @@ type RegisterCommand struct {
 
 type RegisterAccountHandler decorator.CommandHandler[RegisterCommand]
 
-func (au *AccountUsecase) HandleRegister() RegisterAccountHandler {
+func (au *AuthUsecase) HandleRegister() RegisterAccountHandler {
 	return decorator.ApplyCommandDecorators[RegisterCommand](
 		decorator.NewCommandHandler(
 			func(ctx context.Context, cmd RegisterCommand) error {
@@ -78,21 +78,23 @@ type LoginQuery struct {
 }
 
 type LoginResponseInstanse struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	Username string
+	Role     string
 }
 
 type LoginResponse struct {
-	AccessToken           string                `json:"access_token"`
-	AccessTokenExpiresAt  time.Time             `json:"access_token_expires_at"`
-	RefreshToken          string                `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time             `json:"refresh_token_expires_at"`
-	Instance              LoginResponseInstanse `json:"instance"`
+	AccessTokenId         string
+	AccessToken           string
+	AccessTokenExpiresAt  time.Time
+	RefreshTokenId        string
+	RefreshToken          string
+	RefreshTokenExpiresAt time.Time
+	Instance              LoginResponseInstanse
 }
 
 type LoginAccountHandler decorator.QueryHandler[LoginQuery, *LoginResponse]
 
-func (au *AccountUsecase) HandleLogin() LoginAccountHandler {
+func (au *AuthUsecase) HandleLogin() LoginAccountHandler {
 	return decorator.ApplyQueryDecorators[LoginQuery, *LoginResponse](
 		decorator.NewQueryHandler(
 			func(ctx context.Context, query LoginQuery) (*LoginResponse, error) {
@@ -119,8 +121,10 @@ func (au *AccountUsecase) HandleLogin() LoginAccountHandler {
 				}
 
 				return &LoginResponse{
+					AccessTokenId:         token.AccessPayload.GetId().String(),
 					AccessToken:           token.AccessToken,
 					AccessTokenExpiresAt:  token.AccessPayload.GetExpiration(),
+					RefreshTokenId:        token.RefreshPayload.GetId().String(),
 					RefreshToken:          token.RefreshToken,
 					RefreshTokenExpiresAt: token.RefreshPayload.GetExpiration(),
 					Instance: LoginResponseInstanse{
@@ -131,8 +135,3 @@ func (au *AccountUsecase) HandleLogin() LoginAccountHandler {
 			}),
 		au.logger)
 }
-
-type SessionCreateQ struct {
-}
-
-//type SessionCreateHandler decorator.QueryHandler[]

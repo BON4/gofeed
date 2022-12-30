@@ -17,6 +17,10 @@ type ServerConfig struct {
 	HeaderKey  string `mapstructure:"HEADER_KEY"`
 	PaylaodKey string `mapstructure:"PAYLOAD_KEY"`
 
+	RedisHost     string `mapstructure:"REDIS_HOST"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB       int    `mapstructure:"REDIS_DB"`
+
 	DBconn string `mapstructure:"DB_SOURCE"`
 }
 

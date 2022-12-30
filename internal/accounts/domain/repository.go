@@ -7,7 +7,7 @@ type Repository interface {
 	GetAccount(ctx context.Context, username string) (*Account, error)
 }
 
-// type Store interface {
-// 	Get(string) (*Session, error)
-// 	Set(string, *Session) error
-// }
+type Store interface {
+	Get(context.Context, string) (*Session, error)
+	Set(context.Context, string, *Session) error
+}

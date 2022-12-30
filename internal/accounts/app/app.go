@@ -7,4 +7,6 @@ import (
 type Application struct {
 	RegisterAccount usecase.RegisterAccountHandler
 	LoginAccount    usecase.LoginAccountHandler
+	CreateSession   usecase.CreateSessionHandler
+	SessionIsValid  usecase.IsValidSessionHandler
 }

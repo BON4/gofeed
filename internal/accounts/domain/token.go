@@ -100,6 +100,7 @@ func (f *TokenFactory) NewAccesToken(refreshToken string) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &Token{
 		AccessToken:    acessToken,
 		AccessPayload:  acessPayload,

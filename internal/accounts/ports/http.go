@@ -6,6 +6,7 @@ import (
 
 	"github.com/BON4/gofeed/internal/accounts/app"
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
+	"github.com/BON4/gofeed/internal/accounts/domain"
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
 	"github.com/gin-gonic/gin"
@@ -33,10 +34,8 @@ type userResponse struct {
 }
 
 type accountResponse struct {
-	Username int64           `json:"username"`
-	Email    string          `json:"email" format:"email"`
-	Role     string          `json:"role" enums:"admin, basic"`
-	Users    []*userResponse `json:"users"`
+	Username string `json:"username"`
+	Role     string `json:"role" enums:"admin, basic"`
 }
 
 type loginResponse struct {
@@ -72,9 +71,29 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 		httperr.GinRespondWithSlugError(err, ctx)
 	}
 
-	ctx.JSON(http.StatusAccepted, resp)
+	ctx.JSON(http.StatusAccepted, loginResponse{
+		AccessToken:           resp.AccessToken,
+		AccessTokenExpiresAt:  resp.AccessTokenExpiresAt,
+		RefreshToken:          resp.RefreshToken,
+		RefreshTokenExpiresAt: resp.RefreshTokenExpiresAt,
+		Account: accountResponse{
+			Username: resp.Instance.Username,
+			Role:     resp.Instance.Role,
+		},
+	})
 
-	// TODO: create access and refresh token. Save it to go-cache
+	// TODO: handle error
+	h.app.CreateSession.Handle(ctx, usecase.CreateSessionCommand{
+		ID:           resp.RefreshTokenId,
+		Refreshtoken: resp.RefreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		ExpiresAt:    resp.RefreshTokenExpiresAt,
+		Instance: domain.AccountCredentials{
+			Username: resp.Instance.Username,
+			Role:     resp.Instance.Role,
+		},
+	})
 }
 
 type registerParams struct {
