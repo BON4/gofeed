@@ -3,4 +3,4 @@ set -e
 
 readonly output_dir="$1"
 
-swag init -g "$output_dir/main.go" -o "$output_dir/api/openapi/" --ot go,yaml
+swag init -g "main.go" -o "$output_dir/api/openapi/" --dir "$output_dir/,internal/common/" --ot go,yaml

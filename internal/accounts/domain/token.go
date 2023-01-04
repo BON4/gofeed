@@ -8,16 +8,11 @@ import (
 	"go.uber.org/multierr"
 )
 
-type AccountCredentials struct {
-	Username string
-	Role     string
-}
-
 type Token struct {
 	AccessToken    string
-	AccessPayload  *tokens.Payload[AccountCredentials]
+	AccessPayload  *tokens.Payload[tokens.InstanceCredentials]
 	RefreshToken   string
-	RefreshPayload *tokens.Payload[AccountCredentials]
+	RefreshPayload *tokens.Payload[tokens.InstanceCredentials]
 }
 
 type TokenFactoryConfig struct {
@@ -54,7 +49,7 @@ func (f TokenFactoryConfig) Validate() error {
 }
 
 type TokenFactory struct {
-	tokenGen tokens.Generator[AccountCredentials]
+	tokenGen tokens.Generator[tokens.InstanceCredentials]
 	fc       TokenFactoryConfig
 }
 
@@ -63,7 +58,7 @@ func NewAuthTokenFactory(fc TokenFactoryConfig) (*TokenFactory, error) {
 		return nil, errors.Wrap(err, "invalid config passed to factory")
 	}
 
-	gen, err := tokens.NewJWTGenerator[AccountCredentials](fc.TokenSecret)
+	gen, err := tokens.NewJWTGenerator[tokens.InstanceCredentials](fc.TokenSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +66,7 @@ func NewAuthTokenFactory(fc TokenFactoryConfig) (*TokenFactory, error) {
 	return &TokenFactory{fc: fc, tokenGen: gen}, nil
 }
 
-func (f *TokenFactory) NewTokenPair(instance AccountCredentials) (*Token, error) {
+func (f *TokenFactory) NewTokenPair(instance tokens.InstanceCredentials) (*Token, error) {
 	acessToken, acessPayload, err := f.tokenGen.CreateToken(instance, f.fc.AccessTokenDuration)
 	if err != nil {
 		return nil, err
@@ -109,6 +104,6 @@ func (f *TokenFactory) NewAccesToken(refreshToken string) (*Token, error) {
 	}, nil
 }
 
-func (f *TokenFactory) VerifyToken(token string) (*tokens.Payload[AccountCredentials], error) {
+func (f *TokenFactory) VerifyToken(token string) (*tokens.Payload[tokens.InstanceCredentials], error) {
 	return f.tokenGen.VerifyToken(token)
 }

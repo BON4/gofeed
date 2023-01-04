@@ -16,35 +16,72 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/login": {
+        "/api": {
             "post": {
-                "description": "logs in to account with user provided credantials",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Creates post if user have permision",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "posts"
                 ],
-                "summary": "Logs user into the system",
+                "summary": "Create Post",
                 "parameters": [
                     {
-                        "description": "account login credentials",
+                        "description": "information for post creation",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ports.loginParams"
+                            "$ref": "#/definitions/ports.createPostRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/list": {
+            "get": {
+                "description": "Retrives list of json formated objects",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "List",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page number",
+                        "name": "page_number",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ports.loginResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ports.getPostResponse"
+                            }
                         }
                     },
                     "default": {
@@ -56,33 +93,28 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/register": {
-            "post": {
-                "description": "registers new account",
-                "consumes": [
-                    "application/json"
-                ],
+        "/api/{post_id}": {
+            "delete": {
+                "description": "Deletes post if user have permision",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "posts"
                 ],
-                "summary": "Registers user into the system",
+                "summary": "Delete Post",
                 "parameters": [
                     {
-                        "description": "register credantials",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ports.registerParams"
-                        }
+                        "type": "integer",
+                        "description": "account id",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK"
                     },
                     "default": {
                         "description": "",
@@ -106,81 +138,31 @@ const docTemplate = `{
                 }
             }
         },
-        "ports.accountResponse": {
+        "ports.createPostRequest": {
             "type": "object",
             "properties": {
-                "role": {
-                    "type": "string",
-                    "enum": [
-                        "admin",
-                        " basic"
-                    ]
-                },
-                "username": {
+                "text": {
                     "type": "string"
                 }
             }
         },
-        "ports.loginParams": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string",
-                    "format": "password",
-                    "minLength": 4
-                },
-                "username": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            }
-        },
-        "ports.loginResponse": {
+        "ports.getPostResponse": {
             "type": "object",
             "properties": {
-                "access_token": {
+                "content": {
                     "type": "string"
                 },
-                "access_token_expires_at": {
-                    "type": "string",
-                    "format": "date-time"
+                "post_id": {
+                    "type": "integer"
                 },
-                "account": {
-                    "$ref": "#/definitions/ports.accountResponse"
-                },
-                "refresh_token": {
+                "posted_by": {
                     "type": "string"
                 },
-                "refresh_token_expires_at": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            }
-        },
-        "ports.registerParams": {
-            "type": "object",
-            "required": [
-                "email",
-                "password",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "format": "email"
+                "posted_on": {
+                    "type": "string"
                 },
-                "password": {
-                    "type": "string",
-                    "format": "password",
-                    "minLength": 4
-                },
-                "username": {
-                    "type": "string",
-                    "minLength": 1
+                "score": {
+                    "type": "integer"
                 }
             }
         }

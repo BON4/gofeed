@@ -6,6 +6,7 @@ import (
 
 	"github.com/BON4/gofeed/internal/accounts/domain"
 	"github.com/BON4/gofeed/internal/common/decorator"
+	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +34,7 @@ type CreateSessionCommand struct {
 	UserAgent    string
 	ClientIp     string
 	ExpiresAt    time.Time
-	Instance     domain.AccountCredentials
+	Instance     tokens.InstanceCredentials
 }
 
 type CreateSessionHandler decorator.CommandHandler[CreateSessionCommand]

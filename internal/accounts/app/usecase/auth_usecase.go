@@ -9,6 +9,7 @@ import (
 	"github.com/BON4/gofeed/internal/common/decorator"
 	"github.com/BON4/gofeed/internal/common/errors"
 	pswrd "github.com/BON4/gofeed/internal/common/password"
+	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/sirupsen/logrus"
 )
 
@@ -111,7 +112,7 @@ func (au *AuthUsecase) HandleLogin() LoginAccountHandler {
 					return nil, errors.NewInvalidCredError("wrong username or password", "invalid-credentials")
 				}
 
-				token, err := au.tokenFc.NewTokenPair(domain.AccountCredentials{
+				token, err := au.tokenFc.NewTokenPair(tokens.InstanceCredentials{
 					Username: found.GetUsername(),
 					Role:     string(found.GetRole()),
 				})

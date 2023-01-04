@@ -1,0 +1,112 @@
+basePath: /
+definitions:
+  httperr.ErrorResponse:
+    properties:
+      error:
+        type: string
+      slug:
+        type: string
+    type: object
+  ports.createPostRequest:
+    properties:
+      text:
+        type: string
+    type: object
+  ports.getPostResponse:
+    properties:
+      content:
+        type: string
+      post_id:
+        type: integer
+      posted_by:
+        type: string
+      posted_on:
+        type: string
+      score:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This service provide functionality for storing and managing privat
+    telegram channels with subscription based payments for acessing content.
+  title: Telegram Subs API
+  version: "1.0"
+paths:
+  /api:
+    post:
+      description: Creates post if user have permision
+      parameters:
+      - description: information for post creation
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/ports.createPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      summary: Create Post
+      tags:
+      - posts
+  /api/{post_id}:
+    delete:
+      description: Deletes post if user have permision
+      parameters:
+      - description: account id
+        in: path
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      summary: Delete Post
+      tags:
+      - posts
+  /api/list:
+    get:
+      description: Retrives list of json formated objects
+      parameters:
+      - description: page size
+        in: query
+        name: page_size
+        type: integer
+      - description: page number
+        in: query
+        name: page_number
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ports.getPostResponse'
+            type: array
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      summary: List
+      tags:
+      - posts
+securityDefinitions:
+  JWT:
+    in: header
+    name: authorization
+    type: apiKey
+swagger: "2.0"

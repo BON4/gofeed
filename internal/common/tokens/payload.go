@@ -15,7 +15,7 @@ var (
 )
 
 // Payload contains the payload data of the token
-type Payload[T any] struct {
+type Payload[T InstanceCredentials] struct {
 	id        uuid.UUID
 	issuedAt  time.Time
 	expiresAt time.Time
@@ -26,6 +26,10 @@ func (p *Payload[T]) GetExpiration() time.Time {
 	return p.expiresAt
 }
 
+func (p *Payload[T]) GetIssued() time.Time {
+	return p.issuedAt
+}
+
 func (p *Payload[T]) GetId() uuid.UUID {
 	return p.id
 }
@@ -34,7 +38,7 @@ func (p *Payload[T]) GetInstance() T {
 	return p.instance
 }
 
-func NewPayload[T any](instance T, duration time.Duration) (*Payload[T], error) {
+func NewPayload[T InstanceCredentials](instance T, duration time.Duration) (*Payload[T], error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -57,7 +61,7 @@ func (payload *Payload[T]) Valid() error {
 	return nil
 }
 
-func GetPayloadFromContext[T any](ctx *gin.Context, payloadkey string) (*Payload[T], error) {
+func GetPayloadFromContext[T InstanceCredentials](ctx *gin.Context, payloadkey string) (*Payload[T], error) {
 	payload, ok := ctx.Get(payloadkey)
 	if !ok {
 		return nil, cerrors.NewAuthorizationError("no token has been provided", "no-token")

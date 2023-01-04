@@ -6,9 +6,9 @@ import (
 
 	"github.com/BON4/gofeed/internal/accounts/app"
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
-	"github.com/BON4/gofeed/internal/accounts/domain"
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
+	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/gin-gonic/gin"
 )
 
@@ -89,7 +89,7 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 		UserAgent:    ctx.Request.UserAgent(),
 		ClientIp:     ctx.ClientIP(),
 		ExpiresAt:    resp.RefreshTokenExpiresAt,
-		Instance: domain.AccountCredentials{
+		Instance: tokens.InstanceCredentials{
 			Username: resp.Instance.Username,
 			Role:     resp.Instance.Role,
 		},

@@ -70,7 +70,9 @@ func GinRespondWithSlugError(err error, ctx *gin.Context) {
 
 func httpRespondWithError(err error, slug string, w http.ResponseWriter, r *http.Request, logMSg string, status int) {
 	// TODO: log error
-	resp := ErrorResponse{slug, status}
+	resp := ErrorResponse{err.Error(), slug, status}
+
+	w.WriteHeader(resp.httpStatus)
 
 	if err := render.WriteJSON(w, resp); err != nil {
 		panic(err)
@@ -78,6 +80,7 @@ func httpRespondWithError(err error, slug string, w http.ResponseWriter, r *http
 }
 
 type ErrorResponse struct {
+	Error      string `json:"error"`
 	Slug       string `json:"slug"`
 	httpStatus int
 }

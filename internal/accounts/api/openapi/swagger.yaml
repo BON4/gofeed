@@ -2,25 +2,20 @@ basePath: /
 definitions:
   httperr.ErrorResponse:
     properties:
+      error:
+        type: string
       slug:
         type: string
     type: object
   ports.accountResponse:
     properties:
-      account_id:
-        type: integer
-      email:
-        format: email
-        type: string
       role:
         enum:
         - admin
         - ' basic'
         type: string
-      users:
-        items:
-          $ref: '#/definitions/ports.userResponse'
-        type: array
+      username:
+        type: string
     type: object
   ports.loginParams:
     properties:
@@ -53,7 +48,7 @@ definitions:
   ports.registerParams:
     properties:
       email:
-        format: password
+        format: email
         type: string
       password:
         format: password
@@ -66,17 +61,6 @@ definitions:
     - email
     - password
     - username
-    type: object
-  ports.userResponse:
-    properties:
-      browser:
-        type: string
-      ip:
-        format: ipv4
-        type: string
-      uuid:
-        format: uuid
-        type: string
     type: object
 host: localhost:8080
 info:

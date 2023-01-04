@@ -2,7 +2,7 @@ package tokens
 
 import "time"
 
-type Generator[T any] interface {
+type Generator[T InstanceCredentials] interface {
 	// CreateToken creates a new token for a specific username and duration
 	CreateToken(instance T, duration time.Duration) (string, *Payload[T], error)
 

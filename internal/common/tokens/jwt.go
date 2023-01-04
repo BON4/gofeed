@@ -12,12 +12,12 @@ import (
 const minSecretKeySize = 32
 
 // JWTMaker is a JSON Web Token maker
-type JWTGenerator[T any] struct {
+type JWTGenerator[T InstanceCredentials] struct {
 	secretKey string
 }
 
 // NewJWTMaker creates a new JWTMaker
-func NewJWTGenerator[T any](secretKey string) (Generator[T], error) {
+func NewJWTGenerator[T InstanceCredentials](secretKey string) (Generator[T], error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %d characters", minSecretKeySize)
 	}

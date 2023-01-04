@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 )
 
 type sessionBody struct {
-	Id           string             `json:"id"`
-	Refreshtoken string             `json:"refreshtoken"`
-	UserAgent    string             `json:"user_agent"`
-	ClientIp     string             `json:"client_ip"`
-	Blocked      bool               `json:"blocked"`
-	IssuedAt     time.Time          `json:"issued_at"`
-	ExpiresAt    time.Time          `json:"expires_at"`
-	Instance     AccountCredentials `json:"instance"`
+	Id           string                     `json:"id"`
+	Refreshtoken string                     `json:"refreshtoken"`
+	UserAgent    string                     `json:"user_agent"`
+	ClientIp     string                     `json:"client_ip"`
+	Blocked      bool                       `json:"blocked"`
+	IssuedAt     time.Time                  `json:"issued_at"`
+	ExpiresAt    time.Time                  `json:"expires_at"`
+	Instance     tokens.InstanceCredentials `json:"instance"`
 }
 
 type Session struct {
@@ -111,7 +112,7 @@ func (f *SessionFactory) NewSession(
 	clientIp string,
 	issuedAt time.Time,
 	expiresAt time.Time,
-	instance AccountCredentials) (*Session, error) {
+	instance tokens.InstanceCredentials) (*Session, error) {
 
 	ss := sessionBody{
 		Id:           id,
