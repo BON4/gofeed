@@ -91,7 +91,7 @@ func (f *TokenFactory) NewAccesToken(refreshToken string) (*Token, error) {
 		return nil, err
 	}
 
-	acessToken, acessPayload, err := f.tokenGen.CreateToken(refreshPayload.GetInstance(), f.fc.AccessTokenDuration)
+	acessToken, acessPayload, err := f.tokenGen.CreateToken(refreshPayload.Instance, f.fc.AccessTokenDuration)
 	if err != nil {
 		return nil, err
 	}
@@ -105,5 +105,24 @@ func (f *TokenFactory) NewAccesToken(refreshToken string) (*Token, error) {
 }
 
 func (f *TokenFactory) VerifyToken(token string) (*tokens.Payload[tokens.InstanceCredentials], error) {
+	return f.tokenGen.VerifyToken(token)
+}
+
+type TokenVerifier struct {
+	tokenGen tokens.Generator[tokens.InstanceCredentials]
+}
+
+func NewTokenVerifier(secretToken string) (*TokenVerifier, error) {
+	gen, err := tokens.NewJWTGenerator[tokens.InstanceCredentials](secretToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TokenVerifier{
+		tokenGen: gen,
+	}, nil
+}
+
+func (f *TokenVerifier) VerifyToken(token string) (*tokens.Payload[tokens.InstanceCredentials], error) {
 	return f.tokenGen.VerifyToken(token)
 }

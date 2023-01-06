@@ -1,21 +1,29 @@
 package ports
 
 import (
+	"fmt"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
+	"github.com/BON4/gofeed/internal/common/session"
+	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/BON4/gofeed/internal/posts/app"
+	"github.com/BON4/gofeed/internal/posts/app/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 type HttpServer struct {
-	app *app.Application
+	app               *app.Application
+	SessionMiddleware *session.SessionMiddleware
 }
 
-func NewHttpServer(app *app.Application) *HttpServer {
+func NewHttpServer(app *app.Application, SessionMiddleware *session.SessionMiddleware) *HttpServer {
 	return &HttpServer{
-		app: app,
+		app:               app,
+		SessionMiddleware: SessionMiddleware,
 	}
 }
 
@@ -24,6 +32,7 @@ type createPostRequest struct {
 }
 
 // @Summary     Create Post
+// @Security     JWT
 // @Description Creates post if user have permision
 // @Tags        posts
 // @Produce     json
@@ -32,10 +41,34 @@ type createPostRequest struct {
 // @Failure     default {object}  httperr.ErrorResponse
 // @Router      /api [post]
 func (h *HttpServer) CreatePost(ctx *gin.Context) {
-	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
+	fmt.Println("Got req")
+	payload, err := tokens.GetPayloadFromContext(ctx, "payload")
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	var req createPostRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	_, err = h.app.CreatePost.Handle(ctx.Request.Context(), usecase.CreatePostQuery{
+		Content: req.Content,
+		Account: payload.Instance.Username,
+	})
+
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{})
 }
 
 // @Summary     Delete Post
+// @Security     JWT
 // @Description Deletes post if user have permision
 // @Tags        posts
 // @Produce     json
@@ -44,7 +77,32 @@ func (h *HttpServer) CreatePost(ctx *gin.Context) {
 // @Failure     default {object}  httperr.ErrorResponse
 // @Router      /api/{post_id} [delete]
 func (h *HttpServer) DeletePost(ctx *gin.Context) {
-	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
+	payload, err := tokens.GetPayloadFromContext(ctx, "payload")
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	// TODO: this is stupid. Role is defined in accounts.domain
+	if payload.Instance.Role != "admin" {
+		httperr.GinRespondWithSlugError(errors.NewAuthorizationError("only admins can delete post", "post-delete-not-allowed"), ctx)
+		return
+	}
+
+	reqId, err := strconv.ParseInt(ctx.Param("post_id"), 10, 64)
+	if err != nil {
+		httperr.GinRespondWithSlugError(errors.NewIncorrectInputError(err.Error(), "error-parsing-param"), ctx)
+		return
+	}
+
+	if err := h.app.DeletePost.Handle(ctx.Request.Context(), usecase.DeletePostCommand{
+		PostId: reqId,
+	}); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{})
 }
 
 type getPostResponse struct {
@@ -56,6 +114,7 @@ type getPostResponse struct {
 }
 
 // @Summary     List
+// @Security     JWT
 // @Description Retrives list of json formated objects
 // @Tags        posts
 // @Produce     json
@@ -65,5 +124,17 @@ type getPostResponse struct {
 // @Failure     default {object}  httperr.ErrorResponse
 // @Router      /api/list [get]
 func (h *HttpServer) ListPosts(ctx *gin.Context) {
-	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
+	form := usecase.FindPostParams{}
+	if err := ctx.Bind(&form); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	posts, err := h.app.ListPost.Handle(ctx, form)
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, posts)
 }

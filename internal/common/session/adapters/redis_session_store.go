@@ -3,8 +3,8 @@ package adapters
 import (
 	"context"
 
-	"github.com/BON4/gofeed/internal/accounts/domain"
 	"github.com/BON4/gofeed/internal/common/errors"
+	"github.com/BON4/gofeed/internal/common/session/domain"
 	"github.com/go-redis/redis/v9"
 )
 

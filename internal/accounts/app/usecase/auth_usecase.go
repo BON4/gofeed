@@ -9,6 +9,7 @@ import (
 	"github.com/BON4/gofeed/internal/common/decorator"
 	"github.com/BON4/gofeed/internal/common/errors"
 	pswrd "github.com/BON4/gofeed/internal/common/password"
+	sessDomain "github.com/BON4/gofeed/internal/common/session/domain"
 	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/sirupsen/logrus"
 )
@@ -16,14 +17,14 @@ import (
 type AuthUsecase struct {
 	repo    domain.Repository
 	accFc   *domain.Factory
-	tokenFc *domain.TokenFactory
+	tokenFc *sessDomain.TokenFactory
 	logger  *logrus.Entry
 }
 
 func NewAccountUsecase(
 	repo domain.Repository,
 	fc *domain.Factory,
-	tokenFc *domain.TokenFactory,
+	tokenFc *sessDomain.TokenFactory,
 	logger *logrus.Entry,
 ) *AuthUsecase {
 	return &AuthUsecase{
@@ -122,15 +123,15 @@ func (au *AuthUsecase) HandleLogin() LoginAccountHandler {
 				}
 
 				return &LoginResponse{
-					AccessTokenId:         token.AccessPayload.GetId().String(),
+					AccessTokenId:         token.AccessPayload.Id.String(),
 					AccessToken:           token.AccessToken,
-					AccessTokenExpiresAt:  token.AccessPayload.GetExpiration(),
-					RefreshTokenId:        token.RefreshPayload.GetId().String(),
+					AccessTokenExpiresAt:  token.AccessPayload.ExpiresAt,
+					RefreshTokenId:        token.RefreshPayload.Id.String(),
 					RefreshToken:          token.RefreshToken,
-					RefreshTokenExpiresAt: token.RefreshPayload.GetExpiration(),
+					RefreshTokenExpiresAt: token.RefreshPayload.ExpiresAt,
 					Instance: LoginResponseInstanse{
-						Username: token.RefreshPayload.GetInstance().Username,
-						Role:     token.RefreshPayload.GetInstance().Role,
+						Username: token.RefreshPayload.Instance.Username,
+						Role:     token.RefreshPayload.Instance.Role,
 					},
 				}, nil
 			}),

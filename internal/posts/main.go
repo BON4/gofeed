@@ -16,7 +16,7 @@ import (
 // @version         1.0
 // @description     This service provide functionality for storing and managing privat telegram channels with subscription based payments for acessing content.
 
-// @host      localhost:8080
+// @host      localhost:8081
 // @BasePath  /
 
 // @securityDefinitions.apiKey JWT
@@ -32,7 +32,10 @@ func main() {
 	server.RunHTTPServer(
 		func(router *gin.RouterGroup) {
 			ports.MountHandlers(
-				ports.NewHttpServer(application),
+				ports.NewHttpServer(
+					application,
+					service.NewSessionMiddleware(cfg),
+				),
 				router,
 			)
 		},

@@ -1,11 +1,11 @@
-package usecase
+package session
 
 import (
 	"context"
 	"time"
 
-	"github.com/BON4/gofeed/internal/accounts/domain"
 	"github.com/BON4/gofeed/internal/common/decorator"
+	"github.com/BON4/gofeed/internal/common/session/domain"
 	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/sirupsen/logrus"
 )

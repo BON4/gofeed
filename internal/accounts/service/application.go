@@ -8,10 +8,19 @@ import (
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
 	"github.com/BON4/gofeed/internal/accounts/config"
 	"github.com/BON4/gofeed/internal/accounts/domain"
+	"github.com/BON4/gofeed/internal/common/session"
+	sessAdapters "github.com/BON4/gofeed/internal/common/session/adapters"
+	sessDomain "github.com/BON4/gofeed/internal/common/session/domain"
 	"github.com/sirupsen/logrus"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func NewApplication(cfg config.ServerConfig) *app.Application {
+	logger := logrus.NewEntry(logrus.StandardLogger())
+
 	accfc, err := domain.NewFactory(domain.FactoryConfig{
 		MinUsernameLen: 4,
 		MinPasswordLen: 6,
@@ -26,9 +35,15 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 		panic(err)
 	}
 
+	// logger.Info("Applying migrations")
+
+	// if err := runDBMigration(cfg.MigrationsPath, cfg.DBconn); err != nil {
+	// 	panic(err)
+	// }
+
 	rep := adapters.NewPostgresAccountsRepository(db, accfc)
 
-	tokenfc, err := domain.NewAuthTokenFactory(domain.TokenFactoryConfig{
+	tokenfc, err := sessDomain.NewAuthTokenFactory(sessDomain.TokenFactoryConfig{
 		AccessTokenDuration:  cfg.AcessDuration,
 		RefreshTokenDuration: cfg.RefreshDuration,
 		TokenSecret:          cfg.SecretToken,
@@ -37,11 +52,9 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 		panic(err)
 	}
 
-	logger := logrus.NewEntry(logrus.StandardLogger())
-
 	accUcc := usecase.NewAccountUsecase(rep, accfc, tokenfc, logger)
 
-	sessFc, err := domain.NewSessionfactory(domain.SessionFactoryConfig{
+	sessFc, err := sessDomain.NewSessionfactory(sessDomain.SessionFactoryConfig{
 		SessionMinTTL: time.Minute * 60,
 		SessionMaxTTL: time.Hour * 240,
 	})
@@ -50,11 +63,11 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 		panic(err)
 	}
 
-	redisCli := adapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
+	redisCli := sessAdapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
 
-	redisStore := adapters.NewRedisStore(redisCli, &sessFc)
+	redisStore := sessAdapters.NewRedisStore(redisCli, &sessFc)
 
-	sessUc := usecase.NewSessionUsecase(redisStore, &sessFc, logger)
+	sessUc := session.NewSessionUsecase(redisStore, &sessFc, logger)
 
 	return &app.Application{
 		LoginAccount:    accUcc.HandleLogin(),
@@ -62,4 +75,16 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 		CreateSession:   sessUc.HandleCreateSession(),
 		SessionIsValid:  sessUc.HadleIsValidSession(),
 	}
+}
+
+func runDBMigration(migrationURL string, dbSource string) error {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		return err
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
 }

@@ -30,6 +30,22 @@ func (p *Post) DownWote() {
 	p.score--
 }
 
+func (p *Post) Content() string {
+	return p.content
+}
+
+func (p *Post) PostedOn() time.Time {
+	return p.postedOn
+}
+
+func (p *Post) PostedBy() string {
+	return p.postedBy
+}
+
+func (p *Post) Score() int {
+	return p.score
+}
+
 type TooLongContent struct {
 	MaxContentLength      int
 	ProvidedContentLength int

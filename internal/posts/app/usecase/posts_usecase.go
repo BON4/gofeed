@@ -38,12 +38,12 @@ func (p *PostsUsecase) HandleCreatePost() CreatePostHandler {
 			return -1, err
 		}
 
-		created, err := p.repo.Create(ctx, post)
+		created_id, err := p.repo.Create(ctx, post)
 		if err != nil {
 			return -1, err
 		}
 
-		return created.ID(), nil
+		return created_id, nil
 	}), p.logger)
 }
 
@@ -58,5 +58,3 @@ func (p *PostsUsecase) HadleDeletePost() DeletePostHandler {
 		return p.repo.Delete(ctx, cmd.PostId)
 	}), p.logger)
 }
-
-type ListPostHandler decorator.QueryHandler[domain.FindPostParams]

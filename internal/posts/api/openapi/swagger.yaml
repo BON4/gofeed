@@ -9,7 +9,7 @@ definitions:
     type: object
   ports.createPostRequest:
     properties:
-      text:
+      content:
         type: string
     type: object
   ports.getPostResponse:
@@ -25,7 +25,7 @@ definitions:
       score:
         type: integer
     type: object
-host: localhost:8080
+host: localhost:8081
 info:
   contact: {}
   description: This service provide functionality for storing and managing privat
@@ -52,6 +52,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/httperr.ErrorResponse'
+      security:
+      - JWT: []
       summary: Create Post
       tags:
       - posts
@@ -73,6 +75,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/httperr.ErrorResponse'
+      security:
+      - JWT: []
       summary: Delete Post
       tags:
       - posts
@@ -83,10 +87,12 @@ paths:
       - description: page size
         in: query
         name: page_size
+        required: true
         type: integer
       - description: page number
         in: query
         name: page_number
+        required: true
         type: integer
       produces:
       - application/json
@@ -101,6 +107,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/httperr.ErrorResponse'
+      security:
+      - JWT: []
       summary: List
       tags:
       - posts

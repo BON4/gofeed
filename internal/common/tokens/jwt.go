@@ -50,9 +50,9 @@ func (maker *JWTGenerator[T]) VerifyToken(token string) (*Payload[T], error) {
 	if err != nil {
 		verr, ok := err.(*jwt.ValidationError)
 		if ok && errors.Is(verr.Inner, errExpiredToken) {
-			return nil, cerrors.NewAuthorizationError("no token has been provided", "no-token")
+			return nil, cerrors.NewAuthorizationError("token has been expired", "token-expired")
 		}
-		return nil, cerrors.NewAuthorizationError("invalid token has been provided", "invalid-token")
+		return nil, cerrors.NewAuthorizationError(err.Error(), "parse-invalid-token")
 	}
 
 	payload, ok := jwtToken.Claims.(*Payload[T])

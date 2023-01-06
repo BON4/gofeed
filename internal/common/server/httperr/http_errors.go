@@ -52,6 +52,10 @@ func RespondWithSlugError(err error, w http.ResponseWriter, r *http.Request) {
 }
 
 func GinRespondWithSlugError(err error, ctx *gin.Context) {
+	defer func() {
+		ctx.Abort()
+	}()
+
 	slugError, ok := err.(errors.SlugError)
 	if !ok {
 		InternalError("internal-server-error", err, ctx.Writer, ctx.Request)

@@ -18,6 +18,11 @@ const docTemplate = `{
     "paths": {
         "/api": {
             "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Creates post if user have permision",
                 "produces": [
                     "application/json"
@@ -52,6 +57,11 @@ const docTemplate = `{
         },
         "/api/list": {
             "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Retrives list of json formated objects",
                 "produces": [
                     "application/json"
@@ -65,13 +75,15 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "page size",
                         "name": "page_size",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
                         "description": "page number",
                         "name": "page_number",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -95,6 +107,11 @@ const docTemplate = `{
         },
         "/api/{post_id}": {
             "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Deletes post if user have permision",
                 "produces": [
                     "application/json"
@@ -141,7 +158,7 @@ const docTemplate = `{
         "ports.createPostRequest": {
             "type": "object",
             "properties": {
-                "text": {
+                "content": {
                     "type": "string"
                 }
             }
@@ -179,7 +196,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:8081",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Telegram Subs API",

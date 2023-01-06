@@ -11,7 +11,7 @@ openapi_http:
 
 .PHONY: migrateup
 migrateup:
-	migrate -path sql/migrations/accounts -database "$(DB_URL)" -verbose up && migrate -path sql/migrations/accounts -database "$(TEST_DB_URL)" -verbose up
+	migrate -path sql/migrations -database "$(DB_URL)" -verbose up && migrate -path sql/migrations -database "$(TEST_DB_URL)" -verbose up
 
 .PHONY: createdb
 createdb:
@@ -28,3 +28,4 @@ postgres:
 .PHONY: sqlc
 sqlc:
 	@./scripts/sqlc.sh sql/accounts_sqlc.yaml
+	@./scripts/sqlc.sh sql/posts_sqlc.yaml

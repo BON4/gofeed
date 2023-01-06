@@ -4,4 +4,4 @@ CREATE TABLE Posts (
        posted_on timestamptz NOT NULL,
        posted_by text not null,
        score integer not null
-)
+);

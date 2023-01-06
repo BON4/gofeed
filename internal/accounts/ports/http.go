@@ -8,6 +8,7 @@ import (
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
+	"github.com/BON4/gofeed/internal/common/session"
 	"github.com/BON4/gofeed/internal/common/tokens"
 	"github.com/gin-gonic/gin"
 )
@@ -83,7 +84,7 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 	})
 
 	// TODO: handle error
-	h.app.CreateSession.Handle(ctx, usecase.CreateSessionCommand{
+	h.app.CreateSession.Handle(ctx, session.CreateSessionCommand{
 		ID:           resp.RefreshTokenId,
 		Refreshtoken: resp.RefreshToken,
 		UserAgent:    ctx.Request.UserAgent(),

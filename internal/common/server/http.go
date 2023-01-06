@@ -17,6 +17,8 @@ func RunHTTPServer(mountHandlers func(router *gin.RouterGroup), mountDocs func(r
 		// TODO: change to log
 		fmt.Println("Not found PORT, runing on default 8080")
 		port = "8080"
+	} else {
+		fmt.Printf("Server runing on: %s\n", port)
 	}
 
 	RunHTTPServerOnAddr(":"+port, mountHandlers, mountDocs)
