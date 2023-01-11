@@ -1,8 +1,6 @@
 package service
 
 import (
-	"time"
-
 	"github.com/BON4/gofeed/internal/common/session"
 	sessAdapters "github.com/BON4/gofeed/internal/common/session/adapters"
 	sessDomain "github.com/BON4/gofeed/internal/common/session/domain"
@@ -17,7 +15,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func NewSessionMiddleware(cfg config.ServerConfig) *session.SessionMiddleware {
+func NewSessionMiddleware(cfg config.ServerConfig) (*session.SessionMiddleware, func()) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	tokenVer, err := sessDomain.NewTokenVerifier(cfg.SecretToken)
@@ -25,17 +23,17 @@ func NewSessionMiddleware(cfg config.ServerConfig) *session.SessionMiddleware {
 		panic(err)
 	}
 
-	redisCli := sessAdapters.NewRedisConnection(
+	redisCli, err := sessAdapters.NewRedisConnection(
 		cfg.RedisHost,
 		cfg.RedisPassword,
 		cfg.RedisDB,
 	)
 
-	sessFc, err := sessDomain.NewSessionfactory(sessDomain.SessionFactoryConfig{
-		SessionMinTTL: time.Minute * 60,
-		SessionMaxTTL: time.Hour * 240,
-	})
+	if err != nil {
+		panic(err)
+	}
 
+	sessFc, err := sessDomain.NewSessionFactory(nil)
 	if err != nil {
 		panic(err)
 	}
@@ -44,10 +42,12 @@ func NewSessionMiddleware(cfg config.ServerConfig) *session.SessionMiddleware {
 
 	sessMdwr := session.NewSessionMiddleware(redisStore, tokenVer, logger, cfg.HeaderKey)
 
-	return sessMdwr
+	return sessMdwr, func() {
+		_ = redisCli.Close()
+	}
 }
 
-func NewApplication(cfg config.ServerConfig) *app.Application {
+func NewApplication(cfg config.ServerConfig) (*app.Application, func()) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	db, err := adapters.NewPostgresConnection(cfg.DBconn)
@@ -65,12 +65,17 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 
 	postUc := usecase.NewPostsUsecase(repo, logger)
 	postInfoUc := usecase.NewPostInfoUsecase(repo, logger)
+	postUpdUc := usecase.NewPostUpdateUsecase(repo, logger)
 
 	return &app.Application{
-		CreatePost: postUc.HandleCreatePost(),
-		DeletePost: postUc.HadleDeletePost(),
-		ListPost:   postInfoUc.HandleListPosts(),
-	}
+			CreatePost: postUc.HandleCreatePost(),
+			DeletePost: postUc.HadleDeletePost(),
+			ListPost:   postInfoUc.HandleListPosts(),
+			RatePost:   postUpdUc.HandleRatePost(),
+		},
+		func() {
+			_ = db.Close()
+		}
 }
 
 func runDBMigration(migrationURL string, dbSource string) error {

@@ -13,14 +13,19 @@ type RedisStore struct {
 	fc     *domain.SessionFactory
 }
 
-func NewRedisConnection(host string, password string, db int) *redis.Client {
+func NewRedisConnection(host string, password string, db int) (*redis.Client, error) {
 	cli := redis.NewClient(&redis.Options{
 		Addr:     host,
 		Password: password,
 		DB:       db,
 	})
 
-	return cli
+	err := cli.Ping(context.Background()).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return cli, nil
 }
 
 func NewRedisStore(client *redis.Client, fc *domain.SessionFactory) *RedisStore {

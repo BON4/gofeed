@@ -15,3 +15,9 @@ type Post struct {
 	PostedBy string    `json:"posted_by"`
 	Score    int32     `json:"score"`
 }
+
+type Ratedpost struct {
+	PostID     int64  `json:"post_id"`
+	Account    string `json:"account"`
+	RatedScore int32  `json:"rated_score"`
+}

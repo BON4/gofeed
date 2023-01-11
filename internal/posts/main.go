@@ -12,6 +12,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middlewar
 )
 
+// TODO: create CancelRate for Post and DownWote
+
 // @title           Telegram Subs API
 // @version         1.0
 // @description     This service provide functionality for storing and managing privat telegram channels with subscription based payments for acessing content.
@@ -28,13 +30,20 @@ func main() {
 		panic(err)
 	}
 
-	application := service.NewApplication(cfg)
+	application, appCleanup := service.NewApplication(cfg)
+	mdwr, mdwrCleanup := service.NewSessionMiddleware(cfg)
+
+	defer func() {
+		appCleanup()
+		mdwrCleanup()
+	}()
+
 	server.RunHTTPServer(
 		func(router *gin.RouterGroup) {
 			ports.MountHandlers(
 				ports.NewHttpServer(
 					application,
-					service.NewSessionMiddleware(cfg),
+					mdwr,
 				),
 				router,
 			)

@@ -5,3 +5,14 @@ CREATE TABLE Posts (
        posted_by text not null,
        score integer not null
 );
+
+-- TODO: create index for account
+CREATE TABLE RatedPosts (
+       post_id bigint not null,
+       account text not null,
+       rated_score integer not null,
+       PRIMARY KEY (post_id, account)
+);
+
+ALTER TABLE RatedPosts
+      ADD FOREIGN KEY (post_id) REFERENCES Posts (post_id);

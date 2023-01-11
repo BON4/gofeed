@@ -97,12 +97,21 @@ func (f *SessionFactory) UnmarshalSessionJSON(b []byte) (*Session, error) {
 	return &Session{ss}, nil
 }
 
-func NewSessionfactory(fc SessionFactoryConfig) (SessionFactory, error) {
+var DefaultConfig = SessionFactoryConfig{
+	SessionMinTTL: time.Minute * 60,
+	SessionMaxTTL: time.Hour * 240,
+}
+
+// If SessionFactoryConfig == nil, factory initializes with DefaultConfig
+func NewSessionFactory(fc *SessionFactoryConfig) (SessionFactory, error) {
+	if fc == nil {
+		fc = &DefaultConfig
+	}
 	if err := fc.Validate(); err != nil {
 		return SessionFactory{}, errors.Wrap(err, "invalid config passed to factory")
 	}
 
-	return SessionFactory{fc: fc}, nil
+	return SessionFactory{fc: *fc}, nil
 }
 
 func (f *SessionFactory) NewSession(

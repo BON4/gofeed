@@ -1,6 +1,6 @@
 version: "2"
 sql:
-- schema: "migrations/posts/"
+- schema: "migrations/000002_create_post_table.up.sql"
   queries: "queries/posts/"
   engine: "postgresql"
   gen:

@@ -11,7 +11,7 @@ type Post struct {
 	content  string
 	postedOn time.Time //set on init now
 	postedBy string
-	score    int //init with 0
+	score    int32 //init with 0
 }
 
 func (p *Post) ID() int64 {
@@ -42,7 +42,7 @@ func (p *Post) PostedBy() string {
 	return p.postedBy
 }
 
-func (p *Post) Score() int {
+func (p *Post) Score() int32 {
 	return p.score
 }
 
@@ -67,7 +67,7 @@ func UnmarshalPostFromDatabase(
 	content string,
 	postedOn time.Time,
 	poster string,
-	score int) (*Post, error) {
+	score int32) (*Post, error) {
 
 	p, err := NewPost(poster, content)
 	if err != nil {

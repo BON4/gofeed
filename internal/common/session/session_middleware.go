@@ -1,6 +1,9 @@
 package session
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/BON4/gofeed/internal/common/errors"
 	"github.com/BON4/gofeed/internal/common/server/httperr"
 	"github.com/BON4/gofeed/internal/common/session/domain"
@@ -29,21 +32,38 @@ func NewSessionMiddleware(
 	}
 }
 
+const authorizationTypeBearer = "bearer"
+
 func (s *SessionMiddleware) Middleware() gin.HandlerFunc {
 	// TODO: Add mock auth for testing purpeses
 	// 	if mockAuth, _ := strconv.ParseBool(os.Getenv("MOCK_AUTH")); mockAuth {
 	// 		return mock_auth_middleware
 	// }
 	return func(ctx *gin.Context) {
-		s.logger.Info("Trying to get token from:", s.headerKey)
-		token := ctx.GetHeader(s.headerKey)
-		if len(token) == 0 {
-			httperr.GinRespondWithSlugError(errors.NewAuthorizationError("token not provided", "mdwr-not-provided-token"), ctx)
+		authorizationHeader := ctx.GetHeader(s.headerKey)
+
+		if len(authorizationHeader) == 0 {
+			httperr.GinRespondWithSlugError(errors.NewAuthorizationError("authorization header is not provided", "no-token-header"), ctx)
+			return
+
+		}
+
+		fields := strings.Fields(authorizationHeader)
+		if len(fields) < 2 {
+			httperr.GinRespondWithSlugError(errors.NewAuthorizationError("invalid authorization header format", "invalid-token-header"), ctx)
 			return
 		}
 
-		s.logger.Infof("got token: %s", token)
-		payload, err := s.tokenFc.VerifyToken(token)
+		authorizationType := strings.ToLower(fields[0])
+		if authorizationType != authorizationTypeBearer {
+			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
+			httperr.GinRespondWithSlugError(err, ctx)
+			return
+		}
+
+		accessToken := fields[1]
+		s.logger.Infof("got token: %s", accessToken)
+		payload, err := s.tokenFc.VerifyToken(accessToken)
 		if err != nil {
 			httperr.GinRespondWithSlugError(err, ctx)
 			return

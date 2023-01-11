@@ -83,7 +83,6 @@ func (h *HttpServer) Login(ctx *gin.Context) {
 		},
 	})
 
-	// TODO: handle error
 	h.app.CreateSession.Handle(ctx, session.CreateSessionCommand{
 		ID:           resp.RefreshTokenId,
 		Refreshtoken: resp.RefreshToken,
@@ -132,7 +131,6 @@ func (h *HttpServer) Register(ctx *gin.Context) {
 }
 
 // TODO: maby separate Account CRUD to another service
-
 func (h *HttpServer) GetAccount(ctx *gin.Context) {
 	httperr.GinRespondWithSlugError(errors.NewNotImplementedError("Endpopint not ipmlemented", "edp-not-implemented"), ctx)
 }

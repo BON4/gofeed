@@ -28,7 +28,12 @@ func main() {
 		panic(err)
 	}
 
-	application := service.NewApplication(cfg)
+	application, appCleanup := service.NewApplication(cfg)
+
+	defer func() {
+		appCleanup()
+	}()
+
 	server.RunHTTPServer(
 		func(router *gin.RouterGroup) {
 			ports.MountHandlers(

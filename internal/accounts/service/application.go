@@ -1,8 +1,6 @@
 package service
 
 import (
-	"time"
-
 	"github.com/BON4/gofeed/internal/accounts/adapters"
 	"github.com/BON4/gofeed/internal/accounts/app"
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
@@ -18,7 +16,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func NewApplication(cfg config.ServerConfig) *app.Application {
+func NewApplication(cfg config.ServerConfig) (*app.Application, func()) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
 	accfc, err := domain.NewFactory(domain.FactoryConfig{
@@ -54,27 +52,31 @@ func NewApplication(cfg config.ServerConfig) *app.Application {
 
 	accUcc := usecase.NewAccountUsecase(rep, accfc, tokenfc, logger)
 
-	sessFc, err := sessDomain.NewSessionfactory(sessDomain.SessionFactoryConfig{
-		SessionMinTTL: time.Minute * 60,
-		SessionMaxTTL: time.Hour * 240,
-	})
+	sessFc, err := sessDomain.NewSessionFactory(nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	redisCli := sessAdapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
+	redisCli, err := sessAdapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
+	if err != nil {
+		panic(err)
+	}
 
 	redisStore := sessAdapters.NewRedisStore(redisCli, &sessFc)
 
 	sessUc := session.NewSessionUsecase(redisStore, &sessFc, logger)
 
 	return &app.Application{
-		LoginAccount:    accUcc.HandleLogin(),
-		RegisterAccount: accUcc.HandleRegister(),
-		CreateSession:   sessUc.HandleCreateSession(),
-		SessionIsValid:  sessUc.HadleIsValidSession(),
-	}
+			LoginAccount:    accUcc.HandleLogin(),
+			RegisterAccount: accUcc.HandleRegister(),
+			CreateSession:   sessUc.HandleCreateSession(),
+			SessionIsValid:  sessUc.HadleIsValidSession(),
+		},
+		func() {
+			_ = redisCli.Close()
+			_ = db.Close()
+		}
 }
 
 func runDBMigration(migrationURL string, dbSource string) error {

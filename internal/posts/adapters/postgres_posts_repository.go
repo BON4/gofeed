@@ -20,12 +20,34 @@ func NewPostgresPostsRepository(dbcon *sql.DB) *PostgresPostsRepository {
 	}
 }
 
+func (p *PostgresPostsRepository) RatePost(ctx context.Context, params usecase.PostRateParams) error {
+	return p.querys.ExecTx(ctx, func(q *sqlc.Queries) error {
+		var err error
+		err = q.RatePost(ctx, sqlc.RatePostParams{
+			PostID:     params.PostId,
+			Account:    params.Account,
+			RatedScore: params.Rate,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		_, err = q.AddPostScore(ctx, sqlc.AddPostScoreParams{
+			PostID: params.PostId,
+			Score:  params.Rate,
+		})
+
+		return err
+	})
+}
+
 func (p *PostgresPostsRepository) Create(ctx context.Context, post *domain.Post) (int64, error) {
 	createdId, err := p.querys.CreatePost(ctx, sqlc.CreatePostParams{
 		Content:  post.Content(),
 		PostedOn: post.PostedOn(),
 		PostedBy: post.PostedBy(),
-		Score:    int32(post.Score()),
+		Score:    post.Score(),
 	})
 
 	if err != nil {
@@ -52,6 +74,7 @@ func (p *PostgresPostsRepository) List(ctx context.Context, params usecase.FindP
 	posts := make([]*usecase.Post, len(dbPosts))
 
 	for i := 0; i < len(dbPosts); i++ {
+		posts[i] = &usecase.Post{}
 		convertPosts(dbPosts[i], posts[i])
 	}
 

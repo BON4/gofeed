@@ -8,6 +8,7 @@ func MountHandlers(server *HttpServer, router *gin.RouterGroup) {
 	{
 		authorized.POST("/", server.CreatePost)
 		authorized.DELETE("/:post_id", server.DeletePost)
+		authorized.PUT("/up/:post_id", server.UpwotePost)
 	}
 
 	router.GET("/list", server.ListPosts)

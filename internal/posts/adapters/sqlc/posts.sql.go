@@ -10,6 +10,33 @@ import (
 	"time"
 )
 
+const addPostScore = `-- name: AddPostScore :one
+UPDATE Posts
+SET
+	score = score + $1
+WHERE
+	post_id = $2
+RETURNING post_id, content, posted_on, posted_by, score
+`
+
+type AddPostScoreParams struct {
+	Score  int32 `json:"score"`
+	PostID int64 `json:"post_id"`
+}
+
+func (q *Queries) AddPostScore(ctx context.Context, arg AddPostScoreParams) (*Post, error) {
+	row := q.db.QueryRowContext(ctx, addPostScore, arg.Score, arg.PostID)
+	var i Post
+	err := row.Scan(
+		&i.PostID,
+		&i.Content,
+		&i.PostedOn,
+		&i.PostedBy,
+		&i.Score,
+	)
+	return &i, err
+}
+
 const createPost = `-- name: CreatePost :one
 INSERT INTO Posts (
        content,
@@ -85,4 +112,25 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]*Post, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const ratePost = `-- name: RatePost :exec
+INSERT INTO RatedPosts (
+       post_id,
+       account,
+       rated_score
+) VALUES (
+  $1, $2, $3
+)
+`
+
+type RatePostParams struct {
+	PostID     int64  `json:"post_id"`
+	Account    string `json:"account"`
+	RatedScore int32  `json:"rated_score"`
+}
+
+func (q *Queries) RatePost(ctx context.Context, arg RatePostParams) error {
+	_, err := q.db.ExecContext(ctx, ratePost, arg.PostID, arg.Account, arg.RatedScore)
+	return err
 }

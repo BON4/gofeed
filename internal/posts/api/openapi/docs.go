@@ -105,6 +105,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/up/{post_id}": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Upwotes Post and increments its score.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Upwote Post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "account id",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/httperr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/{post_id}": {
             "delete": {
                 "security": [
