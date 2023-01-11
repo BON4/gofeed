@@ -21,8 +21,28 @@ func NewPostgresPostsRepository(dbcon *sql.DB) *PostgresPostsRepository {
 }
 
 func (p *PostgresPostsRepository) RatePost(ctx context.Context, params usecase.PostRateParams) error {
+	var newRate int32 = 0
+	rate, err := p.querys.GetRatePost(ctx, sqlc.GetRatePostParams{
+		PostID:  params.PostId,
+		Account: params.Account,
+	})
+
+	if err == nil {
+		newRate = rate.RatedScore
+	} else {
+		if err != sql.ErrNoRows {
+			return err
+		}
+	}
+
+	if params.Rate == rate.RatedScore {
+		return nil
+	}
+
+	// TODO: begining transaction to like/dislike post is too expansive
 	return p.querys.ExecTx(ctx, func(q *sqlc.Queries) error {
 		var err error
+
 		err = q.RatePost(ctx, sqlc.RatePostParams{
 			PostID:     params.PostId,
 			Account:    params.Account,
@@ -35,7 +55,7 @@ func (p *PostgresPostsRepository) RatePost(ctx context.Context, params usecase.P
 
 		_, err = q.AddPostScore(ctx, sqlc.AddPostScoreParams{
 			PostID: params.PostId,
-			Score:  params.Rate,
+			Score:  params.Rate - newRate,
 		})
 
 		return err

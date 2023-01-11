@@ -80,6 +80,29 @@ paths:
       summary: Delete Post
       tags:
       - posts
+  /api/down/{post_id}:
+    put:
+      description: Downwotes Post and increments its score.
+      parameters:
+      - description: account id
+        in: path
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/httperr.ErrorResponse'
+      security:
+      - JWT: []
+      summary: Downwote Post
+      tags:
+      - posts
   /api/list:
     get:
       description: Retrives list of json formated objects

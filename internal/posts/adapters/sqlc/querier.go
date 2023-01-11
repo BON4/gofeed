@@ -12,6 +12,7 @@ type Querier interface {
 	AddPostScore(ctx context.Context, arg AddPostScoreParams) (*Post, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (int64, error)
 	DeletePost(ctx context.Context, postID int64) error
+	GetRatePost(ctx context.Context, arg GetRatePostParams) (*Ratedpost, error)
 	ListPosts(ctx context.Context, arg ListPostsParams) ([]*Post, error)
 	RatePost(ctx context.Context, arg RatePostParams) error
 }

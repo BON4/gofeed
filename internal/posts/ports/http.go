@@ -101,6 +101,40 @@ func (h *HttpServer) UpwotePost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{})
 }
 
+// @Summary     Downwote Post
+// @Security    JWT
+// @Description Downwotes Post and increments its score.
+// @Tags        posts
+// @Produce     json
+// @Param       post_id   path  int64  true  "account id"
+// @Success     200
+// @Failure     default {object}  httperr.ErrorResponse
+// @Router      /api/down/{post_id} [put]
+func (h *HttpServer) DownwotePost(ctx *gin.Context) {
+	payload, err := tokens.GetPayloadFromContext(ctx, "payload")
+	if err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	reqId, err := strconv.ParseInt(ctx.Param("post_id"), 10, 64)
+	if err != nil {
+		httperr.GinRespondWithSlugError(errors.NewIncorrectInputError(err.Error(), "error-parsing-param"), ctx)
+		return
+	}
+
+	if err := h.app.RatePost.Handle(ctx.Request.Context(), usecase.PostRateParams{
+		PostId:  reqId,
+		Account: payload.Instance.Username,
+		Rate:    -1,
+	}); err != nil {
+		httperr.GinRespondWithSlugError(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{})
+}
+
 // @Summary     Delete Post
 // @Security    JWT
 // @Description Deletes post if user have permision

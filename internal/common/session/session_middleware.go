@@ -62,7 +62,6 @@ func (s *SessionMiddleware) Middleware() gin.HandlerFunc {
 		}
 
 		accessToken := fields[1]
-		s.logger.Infof("got token: %s", accessToken)
 		payload, err := s.tokenFc.VerifyToken(accessToken)
 		if err != nil {
 			httperr.GinRespondWithSlugError(err, ctx)

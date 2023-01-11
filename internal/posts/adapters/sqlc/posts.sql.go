@@ -76,6 +76,22 @@ func (q *Queries) DeletePost(ctx context.Context, postID int64) error {
 	return err
 }
 
+const getRatePost = `-- name: GetRatePost :one
+SELECT post_id, account, rated_score FROM RatedPosts WHERE post_id = $1 and account = $2
+`
+
+type GetRatePostParams struct {
+	PostID  int64  `json:"post_id"`
+	Account string `json:"account"`
+}
+
+func (q *Queries) GetRatePost(ctx context.Context, arg GetRatePostParams) (*Ratedpost, error) {
+	row := q.db.QueryRowContext(ctx, getRatePost, arg.PostID, arg.Account)
+	var i Ratedpost
+	err := row.Scan(&i.PostID, &i.Account, &i.RatedScore)
+	return &i, err
+}
+
 const listPosts = `-- name: ListPosts :many
 SELECT post_id, content, posted_on, posted_by, score FROM Posts offset $2 limit $1
 `
@@ -122,6 +138,9 @@ INSERT INTO RatedPosts (
 ) VALUES (
   $1, $2, $3
 )
+ON CONFLICT (post_id, account)
+DO UPDATE
+   SET rated_score = $3
 `
 
 type RatePostParams struct {

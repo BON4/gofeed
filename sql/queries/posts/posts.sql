@@ -14,6 +14,9 @@ DELETE FROM Posts WHERE post_id = $1;
 -- name: ListPosts :many
 SELECT * FROM Posts offset $2 limit $1;
 
+-- name: GetRatePost :one
+SELECT * FROM RatedPosts WHERE post_id = $1 and account = $2;
+
 -- name: RatePost :exec
 INSERT INTO RatedPosts (
        post_id,
@@ -21,7 +24,10 @@ INSERT INTO RatedPosts (
        rated_score
 ) VALUES (
   $1, $2, $3
-);
+)
+ON CONFLICT (post_id, account)
+DO UPDATE
+   SET rated_score = $3;
 
 -- name: AddPostScore :one
 UPDATE Posts
