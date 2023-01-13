@@ -1,8 +1,9 @@
 package service
 
 import (
+	"os"
+
 	"github.com/BON4/gofeed/internal/common/session"
-	sessAdapters "github.com/BON4/gofeed/internal/common/session/adapters"
 	sessDomain "github.com/BON4/gofeed/internal/common/session/domain"
 	"github.com/BON4/gofeed/internal/posts/adapters"
 	"github.com/BON4/gofeed/internal/posts/app"
@@ -23,34 +24,16 @@ func NewSessionMiddleware(cfg config.ServerConfig) (*session.SessionMiddleware, 
 		panic(err)
 	}
 
-	redisCli, err := sessAdapters.NewRedisConnection(
-		cfg.RedisHost,
-		cfg.RedisPassword,
-		cfg.RedisDB,
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
-	sessFc, err := sessDomain.NewSessionFactory(nil)
-	if err != nil {
-		panic(err)
-	}
-
-	redisStore := sessAdapters.NewRedisStore(redisCli, &sessFc)
-
-	sessMdwr := session.NewSessionMiddleware(redisStore, tokenVer, logger, cfg.HeaderKey)
+	sessMdwr := session.NewSessionMiddleware(tokenVer, logger, cfg.HeaderKey)
 
 	return sessMdwr, func() {
-		_ = redisCli.Close()
 	}
 }
 
 func NewApplication(cfg config.ServerConfig) (*app.Application, func()) {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	db, err := adapters.NewPostgresConnection(cfg.DBconn)
+	db, err := adapters.NewPostgresConnection(os.Getenv("DB_SOURCE"))
 	if err != nil {
 		panic(err)
 	}

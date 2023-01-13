@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"time"
 )
 
 type AccountRole string
@@ -53,10 +54,12 @@ func (ns NullAccountRole) Value() (driver.Value, error) {
 }
 
 type Account struct {
-	Username string      `json:"username"`
-	Password []byte      `json:"password"`
-	Email    string      `json:"email"`
-	Role     AccountRole `json:"role"`
+	Username          string      `json:"username"`
+	Password          []byte      `json:"password"`
+	Email             string      `json:"email"`
+	Activated         bool        `json:"activated"`
+	PasswordChangedAt time.Time   `json:"password_changed_at"`
+	Role              AccountRole `json:"role"`
 }
 
 type User struct {

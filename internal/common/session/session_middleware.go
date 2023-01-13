@@ -12,20 +12,17 @@ import (
 )
 
 type SessionMiddleware struct {
-	store     domain.Store
 	tokenFc   *domain.TokenVerifier
 	logger    *logrus.Entry
 	headerKey string
 }
 
 func NewSessionMiddleware(
-	store domain.Store,
 	tokenFc *domain.TokenVerifier,
 	logger *logrus.Entry,
 	headerKey string,
 ) *SessionMiddleware {
 	return &SessionMiddleware{
-		store:     store,
 		tokenFc:   tokenFc,
 		logger:    logger,
 		headerKey: headerKey,

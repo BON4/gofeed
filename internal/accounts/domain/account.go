@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	pswrd "github.com/BON4/gofeed/internal/common/password"
 	"github.com/pkg/errors"
@@ -32,14 +33,20 @@ func (e AccountRole) IsValid() error {
 }
 
 type Account struct {
-	username string
-	email    string
-	password []byte
-	role     AccountRole
+	username          string
+	email             string
+	password          []byte
+	role              AccountRole
+	activated         bool
+	passwordChangedAt time.Time
 
 	users       []*User
 	once        *sync.Once
 	usersLoader GetUsers
+}
+
+func (a *Account) Activeted() bool {
+	return a.activated
 }
 
 func (a *Account) GetUsername() string {
@@ -128,9 +135,11 @@ func NewFactory(fc FactoryConfig) (*Factory, error) {
 
 func (f *Factory) NewAccount(username, email, password string, role AccountRole) (*Account, error) {
 	a := &Account{
-		username: username,
-		email:    email,
-		role:     role,
+		username:  username,
+		email:     email,
+		role:      role,
+		activated: false,
+		//passwordChangedAt not initialized
 	}
 	var err error
 
@@ -150,12 +159,20 @@ func (f *Factory) NewAccount(username, email, password string, role AccountRole)
 // UnmarshalAccountFromDatabase - unmarshals account from the database.
 //
 // It should be used only for unmarshalling from the database!
-func (f *Factory) UnmarshalAccountFromDatabase(username, email string, password []byte, role AccountRole, lazyGetter GetUsers) (*Account, error) {
+func (f *Factory) UnmarshalAccountFromDatabase(username,
+	email string,
+	password []byte,
+	role AccountRole,
+	activated bool,
+	passwordChangedAt time.Time,
+	lazyGetter GetUsers) (*Account, error) {
 	a := &Account{
-		username: username,
-		email:    email,
-		password: password,
-		role:     role,
+		username:          username,
+		email:             email,
+		password:          password,
+		role:              role,
+		activated:         activated,
+		passwordChangedAt: passwordChangedAt,
 	}
 
 	if lazyGetter == nil {
@@ -216,6 +233,8 @@ func (e InvalidAccountRole) Error() string {
 }
 
 func (f *Factory) validateAccount(acc *Account) error {
+	// TODO: check if passwordChangedAt is valid
+
 	if len(acc.username) < f.fc.MinUsernameLen {
 		return TooShortUsername{
 			MinUsernameLen:   f.fc.MinUsernameLen,

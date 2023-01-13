@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package verifier;
+
+option go_package = "github.com/BON4/gofeed/internal/verifier";
+
+service Ver

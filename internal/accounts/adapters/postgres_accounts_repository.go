@@ -24,10 +24,11 @@ func NewPostgresAccountsRepository(dbconn *sql.DB, accFactory *domain.Factory) *
 
 func (p *PostgresAccountsRepository) CreateAccount(ctx context.Context, acc *domain.Account) (*domain.Account, error) {
 	created, err := p.querys.CreateAccount(ctx, sqlc.CreateAccountParams{
-		Username: acc.GetUsername(),
-		Password: acc.GetPassword(),
-		Email:    acc.GetEmail(),
-		Role:     sqlc.AccountRole(acc.GetRole()),
+		Username:  acc.GetUsername(),
+		Password:  acc.GetPassword(),
+		Email:     acc.GetEmail(),
+		Role:      sqlc.AccountRole(acc.GetRole()),
+		Activated: acc.Activeted(),
 	})
 
 	if err != nil {
@@ -62,7 +63,10 @@ func (p *PostgresAccountsRepository) unmarshalAccount(acc *sqlc.Account, f domai
 		acc.Username,
 		acc.Email,
 		acc.Password,
-		domain.AccountRole(acc.Role), f)
+		domain.AccountRole(acc.Role),
+		acc.Activated,
+		acc.PasswordChangedAt,
+		f)
 }
 
 func (p *PostgresAccountsRepository) unmarshalUser(usr *sqlc.User) *domain.User {

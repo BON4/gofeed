@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package accounts;
+
+option go_package = "github.com/BON4/gofeed/internal/accounts";
+
+import "google/protobuf/empty.proto";
+
+service AccountService {
+	rpc ActivateAccount(ActivateAccountRequest) returns (google.protobuf.Empty) {}
+	rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty) {}
+}
+
+message ActivateAccountRequest {
+	string account_username = 1;
+}
+
+message ChangePasswordRequest {
+	string new_password = 1;
+}

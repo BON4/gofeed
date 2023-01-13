@@ -4,6 +4,8 @@ CREATE TABLE Accounts (
 	username text not null unique PRIMARY KEY,
   	password bytea not null,
   	email text unique not null,
+	activated boolean not null default false,
+	password_changed_at timestamptz NOT NULL DEFAULT('0001-01-01 00:00:00Z'), 
 	role account_role not null default 'basic'
 );
 

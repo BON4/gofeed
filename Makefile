@@ -29,3 +29,7 @@ postgres:
 sqlc:
 	@./scripts/sqlc.sh sql/accounts_sqlc.yaml
 	@./scripts/sqlc.sh sql/posts_sqlc.yaml
+
+.PHONY: proto
+proto:
+	@./scripts/proto.sh accounts

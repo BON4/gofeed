@@ -12,8 +12,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middlewar
 )
 
-// TODO: create CancelRate for Post and DownWote
-
 // @title           Telegram Subs API
 // @version         1.0
 // @description     This service provide functionality for storing and managing privat telegram channels with subscription based payments for acessing content.

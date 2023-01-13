@@ -1,11 +1,16 @@
 package main
 
 import (
+	"os"
+	"strings"
+
 	_ "github.com/BON4/gofeed/internal/accounts/api/openapi"
 	"github.com/BON4/gofeed/internal/accounts/config"
+	"google.golang.org/grpc"
 
 	"github.com/BON4/gofeed/internal/accounts/ports"
 	"github.com/BON4/gofeed/internal/accounts/service"
+	"github.com/BON4/gofeed/internal/common/genproto/accounts"
 	"github.com/BON4/gofeed/internal/common/server"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
@@ -34,14 +39,23 @@ func main() {
 		appCleanup()
 	}()
 
-	server.RunHTTPServer(
-		func(router *gin.RouterGroup) {
-			ports.MountHandlers(
-				ports.NewHttpServer(application),
-				router,
-			)
-		},
-		func(router *gin.RouterGroup) {
-			router.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	serverType := strings.ToLower(os.Getenv("SERVER_TO_RUN"))
+	switch serverType {
+	case "http":
+		server.RunHTTPServer(
+			func(router *gin.RouterGroup) {
+				ports.MountHandlers(
+					ports.NewHttpServer(application),
+					router,
+				)
+			},
+			func(router *gin.RouterGroup) {
+				router.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+			})
+	case "grpc":
+		server.RunGRPCServer(func(server *grpc.Server) {
+			srvc := ports.NewGrpcServer(application)
+			accounts.RegisterAccountServiceServer(server, srvc)
 		})
+	}
 }

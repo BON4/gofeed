@@ -10,6 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO: Hanlde refresh access token
+// TODO: Make separate microsrevice for sessions
+
 type SessionUsecase struct {
 	fc     *domain.SessionFactory
 	store  domain.Store

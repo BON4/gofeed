@@ -1,6 +1,9 @@
 package service
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/BON4/gofeed/internal/accounts/adapters"
 	"github.com/BON4/gofeed/internal/accounts/app"
 	"github.com/BON4/gofeed/internal/accounts/app/usecase"
@@ -28,7 +31,7 @@ func NewApplication(cfg config.ServerConfig) (*app.Application, func()) {
 		panic(err)
 	}
 
-	db, err := adapters.NewPostgresConnection(cfg.DBconn)
+	db, err := adapters.NewPostgresConnection(os.Getenv("DB_SOURCE"))
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +61,9 @@ func NewApplication(cfg config.ServerConfig) (*app.Application, func()) {
 		panic(err)
 	}
 
-	redisCli, err := sessAdapters.NewRedisConnection(cfg.RedisHost, cfg.RedisPassword, cfg.RedisDB)
+	redis_db, _ := strconv.Atoi(os.Getenv(""))
+
+	redisCli, err := sessAdapters.NewRedisConnection(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PASSWORD"), redis_db)
 	if err != nil {
 		panic(err)
 	}

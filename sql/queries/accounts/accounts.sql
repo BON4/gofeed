@@ -3,9 +3,10 @@ INSERT INTO Accounts (
        username,
        password,
        email,
-       role
+       role,
+       activated
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetAccount :one

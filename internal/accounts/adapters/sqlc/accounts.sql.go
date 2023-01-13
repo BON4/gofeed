@@ -14,17 +14,19 @@ INSERT INTO Accounts (
        username,
        password,
        email,
-       role
+       role,
+       activated
 ) VALUES (
-  $1, $2, $3, $4
-) RETURNING username, password, email, role
+  $1, $2, $3, $4, $5
+) RETURNING username, password, email, activated, password_changed_at, role
 `
 
 type CreateAccountParams struct {
-	Username string      `json:"username"`
-	Password []byte      `json:"password"`
-	Email    string      `json:"email"`
-	Role     AccountRole `json:"role"`
+	Username  string      `json:"username"`
+	Password  []byte      `json:"password"`
+	Email     string      `json:"email"`
+	Role      AccountRole `json:"role"`
+	Activated bool        `json:"activated"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (*Account, error) {
@@ -33,19 +35,22 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (*
 		arg.Password,
 		arg.Email,
 		arg.Role,
+		arg.Activated,
 	)
 	var i Account
 	err := row.Scan(
 		&i.Username,
 		&i.Password,
 		&i.Email,
+		&i.Activated,
+		&i.PasswordChangedAt,
 		&i.Role,
 	)
 	return &i, err
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT username, password, email, role FROM Accounts
+SELECT username, password, email, activated, password_changed_at, role FROM Accounts
 WHERE username = $1 LIMIT 1
 `
 
@@ -56,6 +61,8 @@ func (q *Queries) GetAccount(ctx context.Context, username string) (*Account, er
 		&i.Username,
 		&i.Password,
 		&i.Email,
+		&i.Activated,
+		&i.PasswordChangedAt,
 		&i.Role,
 	)
 	return &i, err
